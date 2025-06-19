@@ -240,7 +240,7 @@ class AuthService {
   // Step 7: Logout
   async logout(): Promise<void> {
     const refreshToken = this.getStoredRefreshToken();
-    
+    const idToken = sessionStorage.getItem('id_token');
     // Revoke refresh token if available
     if (refreshToken) {
       try {
@@ -265,8 +265,10 @@ class AuthService {
 
     // Redirect to Keycloak logout
     const logoutUrl = new URL(`${this.keycloakUrl}/realms/${this.realm}/protocol/openid-connect/logout`);
+    if (idToken) {
+      logoutUrl.searchParams.set('id_token_hint', idToken);
+    }
     logoutUrl.searchParams.set('post_logout_redirect_uri', window.location.origin);
-    
     window.location.href = logoutUrl.toString();
   }
 
@@ -275,6 +277,9 @@ class AuthService {
     sessionStorage.setItem('access_token', tokens.access_token);
     sessionStorage.setItem('refresh_token', tokens.refresh_token);
     sessionStorage.setItem('token_expires_at', (Date.now() + tokens.expires_in * 1000).toString());
+    if ((tokens as any).id_token) {
+      sessionStorage.setItem('id_token', (tokens as any).id_token);
+    }
   }
 
   private getStoredAccessToken(): string | null {
