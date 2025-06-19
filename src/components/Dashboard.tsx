@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { environment } from '../config/environment';
 
 const Dashboard: React.FC = () => {
   const { user, logout, isAuthenticated, refreshUser } = useAuth();
@@ -139,8 +140,8 @@ const Dashboard: React.FC = () => {
           }}>
             <h3 style={{ marginTop: 0, color: '#495057' }}>Authentication Status</h3>
             <p><strong>Status:</strong> <span style={{ color: '#28a745' }}>Authenticated</span></p>
-            <p><strong>Realm:</strong> oneid</p>
-            <p><strong>Client:</strong> oneid</p>
+            {/* <p><strong>Realm:</strong> {environment.keycloak.realm}</p>
+            <p><strong>Client:</strong> {environment.keycloak.clientId}</p> */}
             <p><strong>Flow:</strong> OAuth 2.0 Authorization Code with PKCE</p>
           </div>
 
