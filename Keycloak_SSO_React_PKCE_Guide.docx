@@ -1,0 +1,137 @@
+Keycloak SSO Integration with OAuth 2.0 PKCE in React
+
+Overview
+--------
+This guide explains how to integrate Keycloak as an identity provider in a React Single Page Application (SPA) using the OAuth 2.0 Authorization Code Flow with PKCE (Proof Key for Code Exchange). This is the most secure and recommended approach for browser-based applications.
+
+Prerequisites
+-------------
+- A running Keycloak server (with admin access)
+- A Keycloak realm (e.g., `oneid`)
+- A Keycloak client configured for your app (e.g., `react-client`)
+- A React app (e.g., created with Vite or Create React App)
+
+1. Keycloak Client Configuration
+-------------------------------
+1. Create or select a client in your realm (e.g., `react-client`).
+2. Settings:
+   - Client ID: `react-client`
+   - Access Type: `public`
+   - Standard Flow Enabled: Yes (checked)
+   - Valid Redirect URIs: `http://localhost:5174/*`
+   - Web Origins: `http://localhost:5174`
+   - Direct Access Grants: Not required
+   - Implicit Flow: Unchecked
+   - Service Accounts: Unchecked
+3. Save your changes.
+
+2. Install Dependencies
+-----------------------
+```
+npm install react-router-dom
+```
+
+3. Implement PKCE Utility Functions
+-----------------------------------
+Create `src/utils/pkce.ts`:
+
+```
+export function generateCodeVerifier(length: number = 128): string {
+  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+  let result = '';
+  const randomValues = new Uint8Array(length);
+  crypto.getRandomValues(randomValues);
+  for (let i = 0; i < length; i++) {
+    result += charset.charAt(randomValues[i] % charset.length);
+  }
+  return result;
+}
+
+export async function generateCodeChallenge(codeVerifier: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(codeVerifier);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+export function generateState(): string {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+```
+
+4. Create the Auth Service
+--------------------------
+Create `src/services/authService.ts`:
+- Handles login, callback, token exchange, token storage, and logout.
+- Uses PKCE for secure authentication.
+
+Key points:
+- On login, generate PKCE values, store them, and redirect to Keycloak.
+- On callback, exchange code for tokens, validate state, and store tokens.
+- On logout, clear tokens and redirect to Keycloak logout endpoint with `id_token_hint`.
+
+5. React Context for Auth State
+-------------------------------
+Create `src/contexts/AuthContext.tsx`:
+- Provides authentication state and actions to the app.
+- Handles checking token validity, login, logout, and user info refresh.
+
+6. Protect Routes
+-----------------
+Create `src/components/ProtectedRoute.tsx`:
+- Redirects unauthenticated users to `/login` automatically.
+
+```
+import { useAuth } from '../contexts/AuthContext';
+import { Navigate } from 'react-router-dom';
+
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+};
+```
+
+7. Routing Setup
+----------------
+In `src/App.tsx`:
+- Use `react-router-dom` to define routes for `/login`, `/callback`, `/dashboard`, etc.
+- Wrap protected routes with `ProtectedRoute`.
+
+8. Logout
+---------
+- Call `authService.logout()` when the user clicks logout.
+- This will redirect to Keycloak's logout endpoint with the required `id_token_hint`.
+
+9. Best Practices
+-----------------
+- Always use PKCE for SPAs.
+- Store tokens in `sessionStorage` (not `localStorage`) for better security.
+- Never expose a client secret in frontend code.
+- Use HTTPS in production.
+
+10. Troubleshooting
+-------------------
+- 400 Bad Request / Invalid redirect_uri: Make sure the redirect URI in Keycloak matches exactly what your app uses.
+- Code not valid / invalid_grant: Only use the code once. Don't refresh the callback page. Use a single tab.
+- Missing parameters: id_token_hint: Pass the `id_token` as `id_token_hint` in the logout URL.
+
+References
+----------
+- Keycloak Docs: Securing Applications: https://www.keycloak.org/docs/latest/securing_apps/
+- OAuth 2.0 for Browser-Based Apps (RFC 8252): https://datatracker.ietf.org/doc/html/rfc8252
+- Keycloak PKCE Support: https://www.keycloak.org/docs/latest/securing_apps/#pkce
+
+Summary Flow
+------------
+1. User clicks "Sign In with Keycloak".
+2. App generates PKCE params, redirects to Keycloak.
+3. User authenticates, Keycloak redirects back with code.
+4. App exchanges code for tokens using PKCE.
+5. App stores tokens, fetches user info, and updates UI.
+6. User can log out, which clears tokens and redirects to Keycloak logout. 
