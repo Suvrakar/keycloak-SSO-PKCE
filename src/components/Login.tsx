@@ -106,7 +106,7 @@ const Login: React.FC = () => {
             }
           }}
         >
-          {isLoggingIn ? 'Signing In...' : 'Sign In with Keycloak'}
+          {isLoggingIn ? 'Signing In...' : 'Sign In with ONEID'}
         </button>
         
         <div style={{

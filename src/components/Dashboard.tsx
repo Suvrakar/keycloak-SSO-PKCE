@@ -127,6 +127,7 @@ const Dashboard: React.FC = () => {
                 <p><strong>Name:</strong> {user.name || 'N/A'}</p>
                 <p><strong>Given Name:</strong> {user.given_name || 'N/A'}</p>
                 <p><strong>Family Name:</strong> {user.family_name || 'N/A'}</p>
+                <p><strong>Phone:</strong> {user.phoneNumber || 'N/A'}</p>
                 <p><strong>Email Verified:</strong> {user.email_verified ? 'Yes' : 'No'}</p>
               </div>
             )}

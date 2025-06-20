@@ -15,6 +15,7 @@ export interface UserInfo {
   name: string;
   preferred_username: string;
   given_name?: string;
+  phoneNumber?: string;
   family_name?: string;
 }
 
@@ -51,7 +52,7 @@ class AuthService {
 
       // Build authorization URL
       const authUrl = new URL(`${this.keycloakUrl}/realms/${this.realm}/protocol/openid-connect/auth`);
-      
+
       const params = new URLSearchParams({
         client_id: this.clientId,
         response_type: 'code',
@@ -97,7 +98,7 @@ class AuthService {
 
     // Exchange code for tokens
     const tokens = await this.exchangeCodeForTokens(code);
-    
+
     // Fetch user information
     const userInfo = await this.getUserInfo(tokens.access_token);
 
@@ -122,7 +123,7 @@ class AuthService {
     }
 
     const tokenUrl = `${this.keycloakUrl}/realms/${this.realm}/protocol/openid-connect/token`;
-    
+
     const body = new URLSearchParams({
       grant_type: 'authorization_code',
       client_id: this.clientId,
@@ -184,7 +185,7 @@ class AuthService {
     }
 
     const tokenUrl = `${this.keycloakUrl}/realms/${this.realm}/protocol/openid-connect/token`;
-    
+
     const body = new URLSearchParams({
       grant_type: 'refresh_token',
       client_id: this.clientId,
@@ -300,7 +301,7 @@ class AuthService {
   isTokenExpired(): boolean {
     const expiresAt = sessionStorage.getItem('token_expires_at');
     if (!expiresAt) return true;
-    
+
     // Add 30 second buffer
     return Date.now() > parseInt(expiresAt) - 30000;
   }
