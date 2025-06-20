@@ -167,7 +167,7 @@ const Dashboard: React.FC = () => {
         }}>
           <h4 style={{ marginTop: 0, color: '#0056b3' }}>OAuth 2.0 with PKCE Implementation</h4>
           <p style={{ margin: '0 0 10px 0', color: '#0056b3' }}>
-            Your React application is now successfully integrated with Keycloak using the secure OAuth 2.0 Authorization Code Flow with PKCE (Proof Key for Code Exchange).
+            Your React application is now successfully integrated with secure OAuth 2.0 Authorization Code Flow with PKCE (Proof Key for Code Exchange).
           </p>
           <ul style={{ margin: 0, color: '#0056b3', paddingLeft: '20px' }}>
             <li>Secure token exchange using PKCE</li>
