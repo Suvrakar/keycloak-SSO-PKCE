@@ -31,7 +31,7 @@ class AuthService {
   private readonly redirectUri: string;
 
   constructor() {
-    this.keycloakUrl = 'https://oneid.etp.taskstation-23.com';
+    this.keycloakUrl = 'https://oneid.ticket-bangla.com';
     this.realm = 'oneid';
     this.clientId = 'react-client';
     this.redirectUri = window.location.origin + '/callback';
